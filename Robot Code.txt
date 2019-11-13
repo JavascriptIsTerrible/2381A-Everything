@@ -1,0 +1,115 @@
+﻿import vex
+import sys
+
+
+#region config
+
+
+brain   = vex.Brain()
+arms      = vex.Motor(vex.Ports.PORT1, vex.GearSetting.RATIO18_1, False)
+FL      = vex.Motor(vex.Ports.PORT2, vex.GearSetting.RATIO18_1, False)
+BL      = vex.Motor(vex.Ports.PORT3, vex.GearSetting.RATIO18_1, False)
+BR      = vex.Motor(vex.Ports.PORT4, vex.GearSetting.RATIO18_1, False)
+FR      = vex.Motor(vex.Ports.PORT5, vex.GearSetting.RATIO18_1, False)
+wireless_receiver      = vex.Motor(vex.Ports.PORT6, vex.GearSetting.RATIO18_1, False)
+ramp      = vex.Motor(vex.Ports.PORT7, vex.GearSetting.RATIO18_1, False)
+motor_8 = vex.Motor(vex.Ports.PORT8, vex.GearSetting.RATIO18_1, False)
+motor_9 = vex.Motor(vex.Ports.PORT9, vex.GearSetting.RATIO18_1, False)
+con     = vex.Controller(vex.ControllerType.PRIMARY)
+
+
+con.set_deadband(20)
+while True:
+    brain.screen.print_line(1, "i'm so cool")
+    FL_power = 0
+    BL_power = 0
+    BR_power = 0
+    FR_power = 0
+    motor_8_power = 0
+    motor_9_power = 0
+    arms_power = 0
+    ramp_power = 0
+       
+    # axis2: Linear Control
+    power2 = con.axis2.position()
+    if power2 != 0 and abs(power1) <= 22.5:
+        FL_power = power2
+        BL_power = power2
+        BR_power = -1 * power2
+        FR_power = -1 * power2
+    
+    # axis1: Linear Control
+    power1 = con.axis1.position()
+    if power1 != 0 and abs(power2) <= 22.5:
+        FL_power += power1
+        BL_power += -1 * power1
+        BR_power += power1
+        FR_power += -1 * power1
+    
+    # axis4: Linear Control
+    power4 = con.axis4.position()
+    if power4 != 0:
+        FL_power += power4
+        BL_power += power4
+        BR_power += power4
+        FR_power += power4
+        
+        FL_power /= 2
+        BL_power /= 2
+        BR_power /= 2
+        FR_power /= 2
+    
+    
+    # buttonL2:
+    if con.buttonL2.pressing():
+        ramp_power = 10
+    
+    # buttonR2:
+    if con.buttonL1.pressing():
+        ramp_power = -10
+    
+        # buttonDown:
+    if con.buttonDown.pressing():
+        arms_power = 100
+    
+    # buttonUp:
+    if con.buttonUp.pressing():
+        arms_power = -100
+        
+    if con.buttonRight.pressing() or con.buttonY.pressing():
+        FL_power /= 3
+        BL_power /= 3
+        BR_power /= 3
+        FR_power /= 3
+        arms_power /= 3
+        ramp_power /= 3
+    
+    # buttonL1: Forward
+    if con.buttonR1.pressing():
+       motor_8_power = -100
+       motor_9_power = 100
+           
+    # buttonR1: Reverse
+    if con.buttonR2.pressing():
+       motor_8_power = 100
+       motor_9_power = -100
+    
+    FL.spin(vex.DirectionType.FWD, FL_power)
+    BL.spin(vex.DirectionType.FWD, BL_power)
+    BR.spin(vex.DirectionType.FWD, BR_power)
+    FR.spin(vex.DirectionType.FWD, FR_power)
+    motor_8.spin(vex.DirectionType.FWD, motor_8_power)
+    motor_9.spin(vex.DirectionType.FWD, motor_9_power)
+    
+    if con.buttonUp.pressing() or con.buttonDown.pressing():
+        arms.spin(vex.DirectionType.FWD, arms_power);
+    else:
+        arms.stop(vex.BrakeType.HOLD);
+        
+    if con.buttonL1.pressing() or con.buttonL2.pressing():
+        ramp.spin(vex.DirectionType.FWD, ramp_power);
+    else:
+        ramp.stop(vex.BrakeType.HOLD);
+
+
+#endregion actions
